@@ -3,13 +3,13 @@ using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHttpClient();
+
 // Add services to the container.
 // AddRazorComponents: Razor コンポーネントのサーバー側レンダリングに必要なサービスを登録する
 // https://learn.microsoft.com/ja-jp/dotnet/api/microsoft.extensions.dependencyinjection.razorcomponentsservicecollectionextensions.addrazorcomponents?view=aspnetcore-8.0
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-
-builder.Services.AddHttpClient();
 
 builder.Services.AddFluentUIComponents();
 
