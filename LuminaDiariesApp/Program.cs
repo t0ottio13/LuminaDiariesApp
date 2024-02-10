@@ -1,4 +1,5 @@
 using LuminaDiariesApp.Components;
+using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 // https://learn.microsoft.com/ja-jp/dotnet/api/microsoft.extensions.dependencyinjection.razorcomponentsservicecollectionextensions.addrazorcomponents?view=aspnetcore-8.0
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddHttpClient();
+
+builder.Services.AddFluentUIComponents();
 
 var app = builder.Build();
 
@@ -42,5 +47,6 @@ app.UseAntiforgery();
 // Appコンポーネントをマッピングしている
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
 
 app.Run();
