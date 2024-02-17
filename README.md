@@ -9,5 +9,7 @@
 - フレームワーク：.NET 8.0, [Blazor](https://dotnet.microsoft.com/ja-jp/apps/aspnet/web-apps/blazor)
 - ホスティング：[Azure App Service](https://learn.microsoft.com/ja-jp/azure/app-service/overview)
 - DB：[Azure Cosmos DB](https://learn.microsoft.com/ja-jp/azure/cosmos-db/introduction)
-- UI/コンポーネントライブラリ：[Microsoft Fluent UI Blazor components](https://github.com/microsoft/fluentui-blazor)
+- パッケージ
+    - [Azure Cosmos DB Repository .NET SDK](https://github.com/IEvangelist/azure-cosmos-dotnet-repository)[
+    - [Microsoft Fluent UI Blazor components](https://github.com/microsoft/fluentui-blazor)
 - その他 : [Azure OpenAI Service](https://azure.microsoft.com/ja-jp/products/ai-services/openai-service)
