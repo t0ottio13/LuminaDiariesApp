@@ -1,6 +1,9 @@
-﻿@page "/"
+﻿@using LuminaDiariesApp.Models
+@using LuminaDiariesApp.Interfaces
+@page "/"
 @rendermode InteractiveServer
-@using LuminaDiariesApp.Models
+@inject IDiaryService diaryService
+@inject ILogger<Home> logger
 
 <PageTitle>Diary List</PageTitle>
 
@@ -9,24 +12,23 @@
     <FluentTextField Required=true @bind-Value=title style="width: 100%;" />
 
     <FluentInputLabel>Content</FluentInputLabel>
-    <FluentTextArea Required=true @bind-Value=content style="width: 100%;"/>
+    <FluentTextArea Required=true @bind-Value=content style="width: 100%;" />
 
     <FluentInputLabel>Date</FluentInputLabel>
     <FluentDatePicker Required=true @bind-Value=date />
 
     <div>
-        <FluentButton 
-            Appearance="Appearance.Accent"
+        <FluentButton Appearance="Appearance.Accent"
                       AriaLabel="To"
-            OnClick=AddDiary
-            Class="mt-3">
+                      OnClick="@AddDiary"
+                      Class="mt-3">
             Add
         </FluentButton>
     </div>
 
 </FluentCard>
 
-@foreach (var diary in diaries)
+@foreach (var diary in diariesList)
 {
     <FluentCard Class="mt-3">
         <p>@diary.date.ToString("yyyy-MM-dd")</p>
@@ -36,21 +38,47 @@
 }
 
 @code {
-    private List<Diary> diaries = new();
+    private List<Diary> diariesList = new();
+    private long userId = 1;
     private string? title;
     private string? content;
     private DateTime? date = DateTime.Today;
 
-    private void AddDiary()
+    protected override async Task OnInitializedAsync()
     {
-        if (!string.IsNullOrWhiteSpace(title) && !string.IsNullOrWhiteSpace(content)
-        && date is not null)
+        diariesList = await GetDiaries();
+    }
+
+    private async Task<List<Diary>> GetDiaries()
+    {
+        var diaries = await diaryService.GetDiariesAsync(userId);
+        return diaries.ToList();
+    }
+
+    private async void AddDiary()
+    {
+        if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(content)
+        || date is null) return;
+
+        // Add diary to the database
+        var item = new Diary(userId, title, content, date.Value);
+        try
         {
-            diaries.Add(new Diary(title, content, date.Value));
-            title = string.Empty;
-            content = string.Empty;
-            date = DateTime.Today;
-        };
+            await diaryService.AddDiaryAsync(item);
+        }
+        catch
+        {
+            logger.LogError("Could not save to database.");
+        }
+
+        // Update Diary List
+        diariesList = await GetDiaries();
+
+        // Reset input form
+        title = string.Empty;
+        content = string.Empty;
+        date = DateTime.Today;
+
         return;
     }
 }

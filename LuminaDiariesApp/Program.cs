@@ -1,9 +1,31 @@
 using LuminaDiariesApp.Components;
+using LuminaDiariesApp.Interfaces;
+using LuminaDiariesApp.Models;
+using LuminaDiariesApp.Services;
+using Microsoft.Azure.CosmosRepository.Options;
 using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpClient();
+
+// 環境変数を読み込む
+builder.Configuration.AddEnvironmentVariables();
+
+// Cosmos DB のリポジトリを登録する
+builder.Services.AddCosmosRepository(options =>
+{
+    options.CosmosConnectionString = builder.Configuration["CosmosDBConnectionString"];
+    options.DatabaseId = "LuminaDiaries";
+    options.ContainerId = "diary";
+    options.ContainerPerItemType = true;
+
+    options.ContainerBuilder.Configure<Diary>(containerOptions =>
+    {
+        containerOptions.WithContainer("diary");
+        containerOptions.WithPartitionKey("/userId");
+    });
+});
 
 // Add services to the container.
 // AddRazorComponents: Razor コンポーネントのサーバー側レンダリングに必要なサービスを登録する
@@ -12,6 +34,9 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddFluentUIComponents();
+
+// DIを登録する
+builder.Services.AddScoped<IDiaryService, DiaryService>();
 
 var app = builder.Build();
 
@@ -47,6 +72,5 @@ app.UseAntiforgery();
 // Appコンポーネントをマッピングしている
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-
 
 app.Run();
