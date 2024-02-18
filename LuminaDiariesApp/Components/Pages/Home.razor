@@ -4,6 +4,7 @@
 @rendermode InteractiveServer
 @inject IDiaryService diaryService
 @inject ILogger<Home> logger
+@inject IOpenAIService openAIService
 
 <PageTitle>Diary List</PageTitle>
 
@@ -16,6 +17,30 @@
 
     <FluentInputLabel>Date</FluentInputLabel>
     <FluentDatePicker Required=true @bind-Value=date />
+
+    <FluentInputLabel>Comment</FluentInputLabel>
+
+    @if (string.IsNullOrWhiteSpace(eulogy) || !isGenerating)
+    {
+        <FluentButton Appearance="Appearance.Outline"
+                      AriaLabel="To"
+                      OnClick="@RequestComment">
+            Generate
+        </FluentButton>
+    }
+    else if (!string.IsNullOrWhiteSpace(eulogy))
+    {
+        <FluentCard>
+            <p>@eulogy</p>
+        </FluentCard>
+    }
+    else
+    {
+        <div style="width: 300px; display: grid; grid-gap: 12px; grid-auto-flow: column;">
+            <FluentProgress Min="0" Max="100" Value="75"></FluentProgress>
+            <FluentProgress></FluentProgress>
+        </div>
+    }
 
     <div>
         <FluentButton Appearance="Appearance.Accent"
@@ -42,7 +67,10 @@
     private long userId = 1;
     private string? title;
     private string? content;
-    private DateTime? date = DateTime.Today;
+    private string? eulogy;
+    private DateTime? date = DateTime.UtcNow;
+
+    private bool isGenerating;
 
     protected override async Task OnInitializedAsync()
     {
@@ -80,5 +108,19 @@
         date = DateTime.Today;
 
         return;
+    }
+
+    private async void RequestComment()
+    {
+        isGenerating = true;
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return;
+        }
+
+        var message = await openAIService.GetCommentAsync(content);
+        eulogy = message;
+
+        isGenerating = false;
     }
 }
