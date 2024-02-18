@@ -17,6 +17,23 @@
     <FluentInputLabel>Date</FluentInputLabel>
     <FluentDatePicker Required=true @bind-Value=date />
 
+    <FluentInputLabel>Comment</FluentInputLabel>
+    
+    @if (string.IsNullOrWhiteSpace(eulogy))
+    {
+        <FluentButton Appearance="Appearance.Outline"
+                      AriaLabel="To"
+                      OnClick="@RequestComment">
+            Generate
+        </FluentButton>
+    }
+    else
+    {
+        <FluentCard>
+            <p>@eulogy</p>
+        </FluentCard>
+    }
+
     <div>
         <FluentButton Appearance="Appearance.Accent"
                       AriaLabel="To"
@@ -42,6 +59,7 @@
     private long userId = 1;
     private string? title;
     private string? content;
+    private string? eulogy;
     private DateTime? date = DateTime.Today;
 
     protected override async Task OnInitializedAsync()
@@ -80,5 +98,11 @@
         date = DateTime.Today;
 
         return;
+    }
+
+    private void RequestComment()
+    {
+        var comment = "コメント";
+        eulogy = comment;
     }
 }
