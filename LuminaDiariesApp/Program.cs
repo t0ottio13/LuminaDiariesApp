@@ -1,8 +1,9 @@
+using Azure;
+using Azure.AI.OpenAI;
 using LuminaDiariesApp.Components;
 using LuminaDiariesApp.Interfaces;
 using LuminaDiariesApp.Models;
 using LuminaDiariesApp.Services;
-using Microsoft.Azure.CosmosRepository.Options;
 using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,6 +38,10 @@ builder.Services.AddFluentUIComponents();
 
 // DI‚ð“o˜^‚·‚é
 builder.Services.AddScoped<IDiaryService, DiaryService>();
+builder.Services.AddScoped<IOpenAIService, OpenAIService>();
+builder.Services.AddSingleton(new OpenAIClient(
+    new Uri(builder.Configuration["AzureOpenAIResourceUri"]!),
+    new AzureKeyCredential(builder.Configuration["AzureOpenAIApiKey"]!)));
 
 var app = builder.Build();
 
