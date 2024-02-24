@@ -5,50 +5,14 @@
 @inject IDiaryService diaryService
 @inject ILogger<Home> logger
 @inject IOpenAIService openAIService
+@inject NavigationManager navigationManager
 
 <PageTitle>Diary List</PageTitle>
 
-<FluentCard AreaRestricted="false">
-    <FluentInputLabel>Date</FluentInputLabel>
-    <FluentDatePicker Required=true @bind-Value=date />
-
-    <FluentInputLabel>Content</FluentInputLabel>
-    <FluentTextArea Required=true @bind-Value=content style="width: 100%;" />
-
-    <FluentInputLabel>Comment</FluentInputLabel>
-
-    @if (string.IsNullOrWhiteSpace(eulogy) || !isGenerating)
-    {
-        <FluentButton Appearance="Appearance.Outline"
-                      AriaLabel="To"
-                      OnClick="@RequestComment">
-            Generate
-        </FluentButton>
-    }
-    else if (!string.IsNullOrWhiteSpace(eulogy))
-    {
-        <FluentCard>
-            <p>@eulogy</p>
-        </FluentCard>
-    }
-    else
-    {
-        <div style="width: 300px; display: grid; grid-gap: 12px; grid-auto-flow: column;">
-            <FluentProgress Min="0" Max="100" Value="75"></FluentProgress>
-            <FluentProgress></FluentProgress>
-        </div>
-    }
-
-    <div>
-        <FluentButton Appearance="Appearance.Accent"
-                      AriaLabel="To"
-                      OnClick="@AddDiary"
-                      Class="mt-3">
-            Add
-        </FluentButton>
-    </div>
-
-</FluentCard>
+<FluentButton Appearance="Appearance.Accent" AriaLabel="To" Href="/diary/new"
+              OnClick="@LinkToCreatePage">
+Create New Diary
+</FluentButton>
 
 @foreach (var diary in diariesList)
 {
@@ -69,11 +33,6 @@
 @code {
     private List<Diary> diariesList = new();
     private long userId = 1;
-    private string? content;
-    private string? eulogy;
-    private DateTime? date = DateTime.UtcNow;
-
-    private bool isGenerating;
 
     protected override async Task OnInitializedAsync()
     {
@@ -86,43 +45,8 @@
         return diaries.ToList();
     }
 
-    private async void AddDiary()
+    private void LinkToCreatePage()
     {
-        if (string.IsNullOrWhiteSpace(content)
-        || date is null) return;
-
-        // Add diary to the database
-        var item = new Diary(userId, content, date.Value, eulogy);
-        try
-        {
-            await diaryService.AddDiaryAsync(item);
-        }
-        catch
-        {
-            logger.LogError("Could not save to database.");
-        }
-
-        // Update Diary List
-        diariesList = await GetDiaries();
-
-        // Reset input form
-        content = string.Empty;
-        date = DateTime.Today;
-
-        return;
-    }
-
-    private async void RequestComment()
-    {
-        isGenerating = true;
-        if (string.IsNullOrWhiteSpace(content))
-        {
-            return;
-        }
-
-        var message = await openAIService.GetCommentAsync(content);
-        eulogy = message;
-
-        isGenerating = false;
+        navigationManager.NavigateTo("/diary/new");
     }
 }

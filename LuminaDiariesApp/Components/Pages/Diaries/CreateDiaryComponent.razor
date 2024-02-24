@@ -1,0 +1,102 @@
+﻿@page "/diary/new"
+@using LuminaDiariesApp.Models
+@using LuminaDiariesApp.Interfaces
+@rendermode InteractiveServer
+@inject IDiaryService diaryService
+@inject ILogger<CreateDiaryComponent> logger
+@inject IOpenAIService openAIService
+@inject NavigationManager navigationManager
+
+<PageTitle>Create Diary</PageTitle>
+<NavLink Href="/" Class="mt-3">Back to List</NavLink>
+<h3>Create</h3>
+
+<FluentCard AreaRestricted="false">
+    <FluentInputLabel>Date</FluentInputLabel>
+    <FluentDatePicker Required=true @bind-Value=date />
+
+    <FluentInputLabel>Content</FluentInputLabel>
+    <FluentTextArea Required=true @bind-Value=content style="width: 100%;" />
+
+    <FluentInputLabel>Comment</FluentInputLabel>
+
+    @if (string.IsNullOrWhiteSpace(eulogy) || !isGenerating)
+    {
+        <FluentButton Appearance="Appearance.Outline"
+                      AriaLabel="To"
+                      OnClick="@RequestComment">
+            Generate
+        </FluentButton>
+    }
+    else if (!string.IsNullOrWhiteSpace(eulogy))
+    {
+        <FluentCard>
+            <p>@eulogy</p>
+        </FluentCard>
+    }
+    else
+    {
+        <div style="width: 300px; display: grid; grid-gap: 12px; grid-auto-flow: column;">
+            <FluentProgress Min="0" Max="100" Value="75"></FluentProgress>
+            <FluentProgress></FluentProgress>
+        </div>
+    }
+
+    <div>
+        <FluentButton Appearance="Appearance.Accent"
+                      AriaLabel="To"
+                      OnClick="@AddDiary"
+                      Class="mt-3">
+            Add
+        </FluentButton>
+    </div>
+
+</FluentCard>
+
+@code {
+    private List<Diary> diariesList = new();
+    private long userId = 1;
+    private string? content;
+    private string? eulogy;
+    private DateTime? date = DateTime.UtcNow;
+
+    private bool isGenerating;
+
+    private async void AddDiary()
+    {
+        if (string.IsNullOrWhiteSpace(content) || date is null) return;
+
+        // Add diary to the database
+        var item = new Diary(userId, content, date.Value, eulogy);
+        try
+        {
+            await diaryService.AddDiaryAsync(item);
+        }
+        catch
+        {
+            logger.LogError("Could not save to database.");
+        }
+
+        // Reset input form
+        content = string.Empty;
+        date = DateTime.Today;
+
+        // Redirect to the diary list
+        navigationManager.NavigateTo("/");
+        return;
+    }
+
+    private async void RequestComment()
+    {
+        isGenerating = true;
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return;
+        }
+
+        var message = await openAIService.GetCommentAsync(content);
+        eulogy = message;
+
+        isGenerating = false;
+    }
+}
