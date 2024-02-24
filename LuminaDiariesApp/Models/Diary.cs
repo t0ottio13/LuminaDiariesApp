@@ -1,6 +1,5 @@
 ﻿using Microsoft.Azure.CosmosRepository;
 using Microsoft.Azure.CosmosRepository.Attributes;
-using Newtonsoft.Json;
 
 namespace LuminaDiariesApp.Models;
 
@@ -14,26 +13,20 @@ public class Diary : Item
     /// コンストラクタ
     /// </summary>
     /// <param name="userId">ユーザーID</param>
-    /// <param name="title">タイトル</param>
     /// <param name="content">内容</param>
     /// <param name="date">登録日</param>
-    public Diary(long userId, string title, string content, DateTime date)
+    public Diary(long userId, string content, DateTime date, string? eulogy)
     {
         this.userId = userId.ToString();
-        this.title = title;
         this.content = content;
         this.date = date;
+        this.eulogy = eulogy ?? string.Empty;
     }
 
     /// <summary>
     /// ユーザーID
     /// </summary>
     public string userId { get; private set; }
-
-    /// <summary>
-    /// タイトル
-    /// </summary>
-    public string title { get; set; }
 
     /// <summary>
     /// 日記の内容

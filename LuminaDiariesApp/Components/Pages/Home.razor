@@ -9,14 +9,11 @@
 <PageTitle>Diary List</PageTitle>
 
 <FluentCard AreaRestricted="false">
-    <FluentInputLabel>Title</FluentInputLabel>
-    <FluentTextField Required=true @bind-Value=title style="width: 100%;" />
+    <FluentInputLabel>Date</FluentInputLabel>
+    <FluentDatePicker Required=true @bind-Value=date />
 
     <FluentInputLabel>Content</FluentInputLabel>
     <FluentTextArea Required=true @bind-Value=content style="width: 100%;" />
-
-    <FluentInputLabel>Date</FluentInputLabel>
-    <FluentDatePicker Required=true @bind-Value=date />
 
     <FluentInputLabel>Comment</FluentInputLabel>
 
@@ -57,15 +54,21 @@
 {
     <FluentCard Class="mt-3">
         <p>@diary.date.ToString("yyyy-MM-dd")</p>
-        <p>@diary.title</p>
         <p>@diary.content</p>
+        
+        @if (!string.IsNullOrWhiteSpace(diary.eulogy))
+        {
+            <p>AI コメント</p>
+            <FluentCard>
+                <p>@diary.eulogy</p>
+            </FluentCard>
+        }
     </FluentCard>
 }
 
 @code {
     private List<Diary> diariesList = new();
     private long userId = 1;
-    private string? title;
     private string? content;
     private string? eulogy;
     private DateTime? date = DateTime.UtcNow;
@@ -85,11 +88,11 @@
 
     private async void AddDiary()
     {
-        if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(content)
+        if (string.IsNullOrWhiteSpace(content)
         || date is null) return;
 
         // Add diary to the database
-        var item = new Diary(userId, title, content, date.Value);
+        var item = new Diary(userId, content, date.Value, eulogy);
         try
         {
             await diaryService.AddDiaryAsync(item);
@@ -103,7 +106,6 @@
         diariesList = await GetDiaries();
 
         // Reset input form
-        title = string.Empty;
         content = string.Empty;
         date = DateTime.Today;
 
